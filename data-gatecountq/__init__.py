@@ -1,1 +1,1 @@
-imports tasks
+from tasks imports tasks
