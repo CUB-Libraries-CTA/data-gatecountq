@@ -1,1 +1,1 @@
-from tasks.tasks imports *
+from tasks imports __init__
