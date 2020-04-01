@@ -14,15 +14,6 @@ cybercomCollection = os.getenv('CYBERCOM_COLLECTION', "gatecount")
 cybercom_url = "https://libapps.colorado.edu/api/data_store/data/datalake/{0}".format(
     cybercomCollection)
 local_tz = pytz.timezone('US/Mountain')
-# Example task
-@task()
-def add(x, y):
-    """ Example task that adds two numbers or strings
-        args: x and y
-        return addition or concatination of strings
-    """
-    result = x + y
-    return result
 
 
 def getSenSourceHeaders():
@@ -92,20 +83,22 @@ def pullGateCount(start_date, end_date):
     end_date (string): pluse one day -  2019-03-02
     """
     headers = getSenSourceHeaders()
-    #url = " https://vea.sensourceinc.com/api/data/traffic?relativeDate=yesterday"
-    #url = "https://vea.sensourceinc.com/api/data/traffic?dateGroupings=hour(1)&entityType=zone&excludeClosedHours=true&include=zone,sensor,site,location&meta=&metrics=ins,outs&relativeDate=today"
     url = "https://vea.sensourceinc.com/api/data/traffic?dateGroupings=hour(1)&endDate={1}T00:00:00.000Z&entityType=zone&excludeClosedHours=false&include=zone,sensor,site,location&meta=&metrics=ins,outs&relativeDate=custom&startDate={0}T00:00:00.000Z"
     url = url.format(start_date, end_date)
     req = requests.get(url, headers=headers)
     return req
 
 
+@task()
 def pullGateCountYesterday():
+    """
+    Pull yesterday data. This assumes you have a CronJob that runs every morning after Midnight. This job will keep 
+    """
     now = datetime.now()
     start_date = now - timedelta(days=1)
     start_date = start_date.strftime("%Y-%m-%d")
     end_date = now.strftime("%Y-%m-%d")
-    pullGateCountDateRange(start_date, end_date)
+    return pullGateCountDateRange(start_date, end_date)
 
 
 @task()
@@ -121,7 +114,6 @@ def pullGateCountDateRange(start_date, end_date):
     dates = []
     for single_date in daterange(start_date, end_date):
         dates.append(single_date.strftime("%Y-%m-%d"))
-    print(dates)
     for i in range(len(dates)):
         req = pullGateCount(dates[i], dates[i+1])
         data = req.json()
@@ -144,18 +136,13 @@ def pullGateCountDateRange(start_date, end_date):
                 tmp = itm
                 tmp['localDateTime'] = tmpTZD
                 saveCybercomData(tmp)
-        #tmp = json.dumps(data["results"][0], indent=4)
-        # load data mongo
-
-        # except Exception as e:
-        #    print("Error2:", dates[i], str(e))
-        print(dates[i])
+        # print(dates[i])
         if dates[i+1] == dates[-1]:
             break
-    print(dates)
+    return "Date(s) Imported/Updated: {0}".format(",".join(dates[:-1]))
 
 
 if __name__ == "__main__":
-    pullGateCountYesterday()
+    print(pullGateCountYesterday())
     #now = datetime.now().strftime("%Y-%m-%d")
     #pullGateCountDateRange('2020-03-31', '2020-04-01')
