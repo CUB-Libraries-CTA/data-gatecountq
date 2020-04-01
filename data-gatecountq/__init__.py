@@ -1,1 +1,1 @@
-from tasks imports tasks
+from tasks.tasks imports *
