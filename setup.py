@@ -8,5 +8,6 @@ setup(name='data-gatecountq',
           'pymongo',
           'requests',
           'python-dateutil',
+          'tzlocal',
       ],
       )
