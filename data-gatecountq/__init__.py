@@ -1,1 +1,1 @@
-from tasks.tasks import *
+from data-gatcountq.tasks.tasks import *
