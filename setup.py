@@ -1,10 +1,10 @@
 from setuptools import setup, find_packages
 
 setup(name='data-gatecountq',
-      version='0.3',
+      version='0.4',
       packages=find_packages(),
       install_requires=[
-          'celery==4.3.0',
+          'celery',
           'pymongo',
           'requests',
           'python-dateutil',
