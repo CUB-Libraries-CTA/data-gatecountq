@@ -11,8 +11,9 @@ import tzlocal
 
 senSourceURL = "https://auth.sensourceinc.com"
 cybercomCollection = os.getenv('CYBERCOM_COLLECTION', "gatecount")
-cybercom_url = "https://libapps.colorado.edu/api/data_store/data/datalake/{0}".format(
-    cybercomCollection)
+cybercomHost = os.getenv('CYBERCOM_HOST', "libapps.colorado.edu")
+cybercom_url = "https://{0}/api/data_store/data/datalake/{1}".format(
+    cybercomHost, cybercomCollection)
 local_tz = pytz.timezone('US/Mountain')
 
 
@@ -92,12 +93,26 @@ def pullGateCount(start_date, end_date):
 @task()
 def pullGateCountYesterday():
     """
-    Pull yesterday data. This assumes you have a CronJob that runs every morning after Midnight. This job will keep 
+    Pull yesterday data. This assumes you have a CronJob that runs every morning after Midnight.
     """
     now = datetime.now()
     start_date = now - timedelta(days=1)
     start_date = start_date.strftime("%Y-%m-%d")
     end_date = now.strftime("%Y-%m-%d")
+    return pullGateCountDateRange(start_date, end_date)
+
+
+@task()
+def pullGateCountToday():
+    """
+    Pull today's data. Run Cronjob Hourly to pull new data each hour. 
+    """
+    now = datetime.now()
+    # catch 23 hour when date changes
+    start_date = now - timedelta(hours=1)
+    start_date = start_date.strftime("%Y-%m-%d")
+    end_date = now + timedelta(days=1)
+    end_date = end_date.strftime("%Y-%m-%d")
     return pullGateCountDateRange(start_date, end_date)
 
 
